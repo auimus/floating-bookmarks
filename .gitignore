@@ -1,0 +1,16 @@
+# Local browser verification output
+tests/browser/results/
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+
+# Generated packages and temporary files
+*.zip
+*.crx
+*.pem
+*.log
+node_modules/
+.DS_Store
+Thumbs.db

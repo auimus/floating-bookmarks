@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>浮签 · 设置</title>
+  <link rel="stylesheet" href="popup.css">
+  <script src="shared.js" defer></script>
+  <script src="popup.js" defer></script>
+</head>
+<body>
+  <main>
+    <header class="header">
+      <img src="icons/icon48.png" width="42" height="42" alt="">
+      <div class="identity"><h1>浮签</h1></div>
+      <button type="button" id="manager" class="icon-button" title="管理书签" aria-label="管理书签"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11 3h6v6M17 3l-8 8M8 4H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4"/></svg></button>
+    </header>
+    <form id="settings">
+      <fieldset disabled id="fields">
+        <label class="activation"><span><i class="status-dot" aria-hidden="true"></i>启用书签栏</span><input type="checkbox" name="enabled" class="toggle" role="switch"></label>
+        <div class="settings-group">
+          <label class="control-row"><span>显示文件夹</span><select name="rootId" aria-label="显示文件夹"><option value="auto">Chrome 书签栏</option></select></label>
+          <div class="control-row theme-row">
+            <span id="theme-label">外观</span>
+            <select name="theme" class="sr-only" tabindex="-1" aria-hidden="true"><option value="light">浅色</option><option value="dark">深色</option><option value="system">系统</option></select>
+            <div class="theme-options" role="group" aria-labelledby="theme-label" data-ready="false">
+              <span class="theme-indicator" aria-hidden="true"></span>
+              <button type="button" data-theme-choice="light" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.5"/><path d="M10 1.5v2M10 16.5v2M1.5 10h2M16.5 10h2M4 4l1.5 1.5M14.5 14.5 16 16M16 4l-1.5 1.5M5.5 14.5 4 16"/></svg>浅色</button>
+              <button type="button" data-theme-choice="dark" aria-pressed="true"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16.8 11.4A7 7 0 0 1 8.6 3.2a7 7 0 1 0 8.2 8.2z"/></svg>深色</button>
+              <button type="button" data-theme-choice="system" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="3.5" width="15" height="10" rx="2"/><path d="M7 17h6M10 13.5V17"/></svg>系统</button>
+            </div>
+          </div>
+          <div class="control-row">
+            <span id="surface-label">样式</span>
+            <select name="surface" class="sr-only" tabindex="-1" aria-hidden="true"><option value="glass">磨砂</option><option value="solid">纯色</option></select>
+            <div class="theme-options style-options" role="group" aria-labelledby="surface-label" data-ready="false">
+              <span class="theme-indicator" aria-hidden="true"></span>
+              <button type="button" data-surface-choice="glass" aria-pressed="true"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="14" height="14" rx="3"/><path d="M6 7h8M6 10h8M6 13h8" opacity=".55"/></svg>磨砂</button>
+              <button type="button" data-surface-choice="solid" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="14" height="14" rx="3" fill="currentColor" stroke="none" opacity=".5"/></svg>纯色</button>
+            </div>
+          </div>
+          <label class="control-row"><span>固定显示</span><input type="checkbox" name="pinned" class="toggle" role="switch"></label>
+          <label class="control-row"><span>新标签页打开</span><input type="checkbox" name="openNewTab" class="toggle" role="switch"></label>
+        </div>
+        <details class="disclosure">
+          <summary>位置与间距<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 8 4 4 4-4"/></svg></summary>
+          <div class="detail-content">
+            <label class="control-row"><span>距网页顶部</span><span class="number-field"><input type="number" name="topOffset" min="0" max="24" step="1" required aria-label="书签栏距网页顶部（像素）"><span>像素</span></span></label>
+            <label class="control-row"><span>下拉菜单间距</span><span class="number-field"><input type="number" name="menuGap" min="0" max="16" step="1" required aria-label="下拉菜单间距（像素）"><span>像素</span></span></label>
+          </div>
+        </details>
+        <details class="disclosure">
+          <summary>展开与收起<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 8 4 4 4-4"/></svg></summary>
+          <div class="detail-content">
+            <label class="control-row"><span>展开延迟</span><span class="number-field"><input type="number" name="hoverDelay" min="0" max="700" step="50" required aria-label="展开延迟（毫秒）"><span>毫秒</span></span></label>
+            <label class="control-row"><span>收起延迟</span><span class="number-field"><input type="number" name="hideDelay" min="150" max="2000" step="50" required aria-label="收起延迟（毫秒）"><span>毫秒</span></span></label>
+            <label class="control-row"><span>顶部触发区</span><span class="number-field"><input type="number" name="triggerHeight" min="2" max="12" required aria-label="顶部触发区（像素）"><span>像素</span></span></label>
+          </div>
+        </details>
+        <details class="disclosure">
+          <summary>排除网站<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 8 4 4 4-4"/></svg></summary>
+          <div class="detail-content domains">
+            <label for="excludedHosts">每行一个域名，子域名单独填写。</label>
+            <textarea id="excludedHosts" name="excludedHosts" placeholder="example.com&#10;www.example.com" rows="3" spellcheck="false"></textarea>
+          </div>
+        </details>
+        <div class="save-area">
+          <p id="status" role="status" aria-live="polite">读取中…</p>
+          <button type="submit" id="save"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4.5 10 3.5 3.5 7.5-7.5"/></svg><span>保存设置</span></button>
+        </div>
+      </fieldset>
+    </form>
+    <details class="help">
+      <summary>使用帮助<span><kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd></span></summary>
+      <div class="help-content">
+        <p>鼠标移到网页顶部展开，移开后收起。<kbd>Esc</kbd> 关闭菜单。</p>
+        <p>首次安装后请刷新网页。Chrome 内置页、新标签页、扩展商店和内置 PDF 阅读器不显示书签栏。</p>
+      </div>
+    </details>
+  </main>
+</body>
+</html>
