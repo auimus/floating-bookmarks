@@ -19,7 +19,7 @@
   }],
   "content_scripts": [{
     "matches": ["http://*/*", "https://*/*"],
-    "js": ["shared.js", "bar-styles.js", "content.js"],
+    "js": ["shared.js", "bar-styles.js", "bar-motion.js", "content.js"],
     "run_at": "document_idle",
     "all_frames": false
   }],

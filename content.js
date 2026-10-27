@@ -1,6 +1,7 @@
 (() => {
   if (document.getElementById("floating-bookmarks-extension")) return;
   const FB = globalThis.FloatingBookmarks;
+  const chrome = globalThis.FloatingBookmarksPreviewAPI || globalThis.chrome;
   const host = document.createElement("div");
   host.id = "floating-bookmarks-extension";
   host.style.cssText = "all:initial!important;position:fixed!important;top:0!important;left:0!important;width:100%!important;height:0!important;z-index:2147483647!important;pointer-events:none!important;color-scheme:normal!important";
@@ -83,6 +84,7 @@
   let lastFocused, toast;
   const media = matchMedia("(prefers-color-scheme: light)");
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const motion = globalThis.FloatingBookmarksMotion.create({ shadow, bar, reducedMotion, getSettings: () => prefs, onBarHover: () => clearTimeout(hideTimer), onBarLeave: scheduleHide });
   function theme() { host.dataset.theme = prefs.theme === "system" ? (media.matches ? "light" : "dark") : prefs.theme; }
   media.addEventListener("change", theme);
   function isDisabled() { return !prefs.enabled || prefs.excludedHosts.includes(location.hostname.toLowerCase()) || !!document.fullscreenElement; }
@@ -90,9 +92,13 @@
     prefs = FB.normalizeSettings(next);
     theme();
     host.dataset.surface = prefs.surface;
+    host.dataset.showHint = String(prefs.showHint);
     host.style.setProperty("--trigger", `${prefs.triggerHeight}px`);
     host.style.setProperty("--bar-top", `${prefs.topOffset}px`);
     host.style.setProperty("--menu-gap", `${prefs.menuGap}px`);
+    host.style.setProperty("--selection-move", `${prefs.openDuration * 280 / 440}ms`);
+    host.style.setProperty("--selection-in", `${prefs.openDuration * 120 / 440}ms`);
+    host.style.setProperty("--selection-out", `${prefs.closeDuration * 120 / 220}ms`);
     host.hidden = isDisabled();
     // The host has important inline positioning; explicitly override display as well.
     host.style.setProperty("display", isDisabled() ? "none" : "block", "important");
@@ -107,8 +113,10 @@
   function reveal() {
     if (isDisabled()) return;
     clearTimeout(showTimer); clearTimeout(hideTimer);
+    const opening = !shown;
     shown = true;
     host.setAttribute("data-open", "");
+    if (opening) motion.enterBar();
   }
   function syncSelection() {
     const anchor = panels[0]?.anchor;
@@ -122,23 +130,36 @@
     if (first) { selection.getBoundingClientRect(); selection.style.removeProperty("transition"); }
     selection.setAttribute("data-visible", "");
   }
-  function closePanels(from = 0, updateSelection = true) {
-    for (const item of panels.splice(from)) {
-      for (const animation of item.panel.getAnimations({ subtree: true })) animation.cancel();
-      item.panel.remove();
+  function closePanels(from = 0, updateSelection = true, animate = false) {
+    const closing = panels.splice(from);
+    const retiring = new Set();
+    for (const [offset, item] of closing.entries()) {
+      motion.cancelPanel(from + offset);
+      if (animate && motion.leavePanel(item.panel, item.anchor, from + offset)) retiring.add(item.panel);
+    }
+    for (const item of closing) {
+      if (!retiring.has(item.panel)) {
+        for (const animation of item.panel.getAnimations({ subtree: true })) animation.cancel();
+        item.panel.remove();
+      }
       item.anchor?.setAttribute("aria-expanded", "false");
     }
     if (updateSelection) syncSelection();
   }
-  function collapse() {
+  function collapse(force = false) {
     clearTimeout(showTimer); clearTimeout(hideTimer);
-    closePanels();
+    const closingBar = shown && (force || !prefs.pinned) && !isDisabled();
+    const box = closingBar ? bar.getBoundingClientRect() : null;
+    if (isDisabled()) motion.clear();
+    if (closingBar) motion.leaveBar(box);
+    closePanels(0, true, !isDisabled());
     keyboardHeld = false;
-    shown = prefs.pinned && !isDisabled();
+    shown = !force && prefs.pinned && !isDisabled();
     host.toggleAttribute("data-open", shown);
   }
   function scheduleHide() {
     clearTimeout(hideTimer);
+    if (chrome.preview?.keepOpen) return;
     if (!prefs.pinned && !keyboardHeld) hideTimer = setTimeout(() => {
       // Recheck the pointer: a queued leave event must not hide a surface it has re-entered.
       if (trigger.matches(":hover") || bar.matches(":hover") || panels.some(({ panel }) => panel.matches(":hover"))) return;
@@ -218,6 +239,7 @@
     } catch (error) { report(error.message); }
   }
   function renderBookmarks() {
+    motion.cancelPanel(0);
     closePanels();
     selection.style.transition = "none";
     selection.style.width = "0px"; selection.style.transform = "translateX(0)";
@@ -243,13 +265,15 @@
     const previous = panels[depth]?.panel;
     // Read the current frame before cancellation, including an interrupted transition.
     const previousBounds = previous?.getBoundingClientRect();
+    const previousClip = previous && getComputedStyle(previous).clipPath;
     closePanels(depth, false);
     const body = el("div", "panel-body"); body.setAttribute("role", "presentation"); body.append(...panel.childNodes); panel.append(body);
     if (previousBounds) panel.style.animation = "none";
     shadow.append(panel); panels.push({ panel, anchor });
     anchor.setAttribute("aria-expanded", "true"); place(panel, anchor, depth);
     syncSelection();
-    if (previousBounds && !reducedMotion.matches) animatePanelSwitch(panel, body, previousBounds);
+    if (previousBounds) motion.switchPanel(panel, body, previousBounds, previousClip);
+    else motion.enterPanel(panel, anchor, depth);
     panel.addEventListener("pointerenter", () => clearTimeout(hideTimer));
     panel.addEventListener("pointerleave", scheduleHide);
     panel.addEventListener("keydown", event => {
@@ -264,24 +288,8 @@
       if (event.key === "ArrowLeft" && depth > 0) { event.preventDefault(); closePanels(depth); anchor.focus(); }
     });
   }
-  function animatePanelSwitch(panel, body, from) {
-    const to = panel.getBoundingClientRect();
-    if (!from.width || !from.height || !to.width || !to.height) return;
-    const frame = box => ({ left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, height: `${box.height}px` });
-    panel.classList.add("is-switching");
-    const motion = panel.animate([frame(from), frame(to)], {
-      duration: 190, easing: "cubic-bezier(.2,.75,.25,1)"
-    });
-    const settle = () => panel.classList.remove("is-switching");
-    motion.finished.then(settle, settle);
-    const direction = to.left === from.left ? 0 : (to.left > from.left ? 1 : -1);
-    body.animate([
-      { opacity: .3, transform: `translateX(${direction * 7}px)` },
-      { opacity: 1, transform: "translateX(0)" }
-    ], { duration: 140, easing: "cubic-bezier(.2,.75,.25,1)" });
-  }
   function toggleFolder(node, anchor, depth) {
-    if (panels[depth]?.anchor === anchor) closePanels(depth);
+    if (panels[depth]?.anchor === anchor) closePanels(depth, true, true);
     else openFolder(node, anchor, depth);
   }
   function openFolder(node, anchor, depth) {
@@ -339,12 +347,16 @@
     if (shown && !event.composedPath().includes(host)) collapse();
   }, true);
   document.addEventListener("fullscreenchange", () => applySettings(prefs));
-  window.addEventListener("resize", () => closePanels());
+  window.addEventListener("resize", () => { motion.clear(); closePanels(); });
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === "local" && changes.settings) applySettings(changes.settings.newValue);
   });
   chrome.runtime.onMessage.addListener(message => {
     if (message.type === "BOOKMARKS_CHANGED") load();
+    if (message.type === "PREVIEW_VISIBILITY" && chrome.preview) {
+      if (message.open) reveal();
+      else collapse(message.force === true);
+    }
     if (message.type === "TOGGLE_BAR") {
       if (shown) collapse();
       else { lastFocused = document.activeElement; reveal(); keyboardHeld = true; (list.querySelector("button") || searchButton).focus(); }

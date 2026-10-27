@@ -10,9 +10,10 @@
 </head>
 <body>
   <main>
+    <section class="settings-pane" aria-label="书签栏设置">
     <header class="header">
       <img src="icons/icon48.png" width="42" height="42" alt="">
-      <div class="identity"><h1>浮签</h1></div>
+      <div class="identity"><h1>浮签</h1><span>书签栏设置</span></div>
       <button type="button" id="manager" class="icon-button" title="管理书签" aria-label="管理书签"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11 3h6v6M17 3l-8 8M8 4H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4"/></svg></button>
     </header>
     <form id="settings">
@@ -42,19 +43,26 @@
           <label class="control-row"><span>固定显示</span><input type="checkbox" name="pinned" class="toggle" role="switch"></label>
           <label class="control-row"><span>新标签页打开</span><input type="checkbox" name="openNewTab" class="toggle" role="switch"></label>
         </div>
-        <details class="disclosure">
+        <details class="disclosure" open>
           <summary>位置与间距<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 8 4 4 4-4"/></svg></summary>
           <div class="detail-content">
             <label class="control-row"><span>距网页顶部</span><span class="number-field"><input type="number" name="topOffset" min="0" max="24" step="1" required aria-label="书签栏距网页顶部（像素）"><span>像素</span></span></label>
+            <input class="spacing-slider" type="range" data-setting="topOffset" min="0" max="24" step="1" value="2" aria-label="拖动调整书签栏顶部间距">
             <label class="control-row"><span>下拉菜单间距</span><span class="number-field"><input type="number" name="menuGap" min="0" max="16" step="1" required aria-label="下拉菜单间距（像素）"><span>像素</span></span></label>
+            <input class="spacing-slider" type="range" data-setting="menuGap" min="0" max="16" step="1" value="2" aria-label="拖动调整下拉菜单间距">
           </div>
         </details>
         <details class="disclosure">
           <summary>展开与收起<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 8 4 4 4-4"/></svg></summary>
           <div class="detail-content">
+            <label class="control-row"><span>显示顶部横条</span><input type="checkbox" name="showHint" class="toggle" role="switch"></label>
             <label class="control-row"><span>展开延迟</span><span class="number-field"><input type="number" name="hoverDelay" min="0" max="700" step="50" required aria-label="展开延迟（毫秒）"><span>毫秒</span></span></label>
             <label class="control-row"><span>收起延迟</span><span class="number-field"><input type="number" name="hideDelay" min="150" max="2000" step="50" required aria-label="收起延迟（毫秒）"><span>毫秒</span></span></label>
             <label class="control-row"><span>顶部触发区</span><span class="number-field"><input type="number" name="triggerHeight" min="2" max="12" required aria-label="顶部触发区（像素）"><span>像素</span></span></label>
+            <input class="spacing-slider" type="range" data-setting="triggerHeight" min="2" max="12" step="1" value="4" aria-label="拖动调整顶部触发区高度">
+            <label class="control-row"><span>展开动画时长</span><span class="number-field"><input type="number" name="openDuration" min="0" max="2000" step="1" required aria-label="展开动画时长（毫秒）"><span>毫秒</span></span></label>
+            <label class="control-row"><span>收起动画时长</span><span class="number-field"><input type="number" name="closeDuration" min="0" max="2000" step="1" required aria-label="收起动画时长（毫秒）"><span>毫秒</span></span></label>
+            <p class="control-note">时长控制动画速度，设为 0 可关闭对应动画。</p>
           </div>
         </details>
         <details class="disclosure">
@@ -77,6 +85,27 @@
         <p>首次安装后请刷新网页。Chrome 内置页、新标签页、扩展商店和内置 PDF 阅读器不显示书签栏。</p>
       </div>
     </details>
+    <section class="about" aria-labelledby="about-title">
+      <div class="about-heading"><h2 id="about-title">关于</h2><span id="extension-version"></span></div>
+      <a href="https://github.com/auimus/floating-bookmarks" target="_blank" rel="noopener noreferrer">
+        <span>github.com/auimus/floating-bookmarks</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11 3h6v6M17 3l-8 8M8 4H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4"/></svg>
+      </a>
+    </section>
+    </section>
+    <aside class="preview-pane" aria-labelledby="preview-title">
+      <div class="preview-heading"><h2 id="preview-title">实时预览</h2><span id="preview-state" role="status">读取中…</span></div>
+      <div class="preview-modes" role="group" aria-label="预览模式">
+        <button type="button" data-preview-mode="appearance" aria-pressed="true">外观预览</button>
+        <button type="button" data-preview-mode="behavior" aria-pressed="false">测试展开</button>
+        <button type="button" id="replay-preview">重播动效</button>
+      </div>
+      <div class="preview-window">
+        <div class="preview-chrome" aria-hidden="true"><span class="window-dots"><i></i><i></i><i></i></span><span class="preview-address"></span></div>
+        <iframe id="preview" src="preview.html" title="书签栏实时预览"></iframe>
+      </div>
+      <div class="preview-measures" aria-label="当前预览间距"><span>顶部 <strong id="preview-top">2 px</strong></span><span>菜单 <strong id="preview-gap">2 px</strong></span><span>触发区 <strong id="preview-trigger">4 px</strong></span></div>
+      <p id="preview-hint">调整后即时预览，保存后应用到网页。</p>
+    </aside>
   </main>
 </body>
 </html>

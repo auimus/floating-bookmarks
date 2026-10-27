@@ -4,18 +4,19 @@
     enabled: true, pinned: false, theme: "dark", surface: "glass", rootId: "auto",
     openNewTab: true, hoverDelay: 100, hideDelay: 450, triggerHeight: 4,
     topOffset: 2, menuGap: 2,
+    showHint: true, openDuration: 440, closeDuration: 220,
     excludedHosts: []
   });
   function normalizeSettings(input = {}) {
     if (!input || typeof input !== "object") input = {};
     const result = { ...defaults };
-    for (const key of ["enabled", "pinned", "openNewTab"]) {
+    for (const key of ["enabled", "pinned", "openNewTab", "showHint"]) {
       if (typeof input[key] === "boolean") result[key] = input[key];
     }
     if (["dark", "light", "system"].includes(input.theme)) result.theme = input.theme;
     if (["solid", "glass"].includes(input.surface)) result.surface = input.surface;
     if (typeof input.rootId === "string" && input.rootId.length < 128) result.rootId = input.rootId;
-    for (const [key, min, max] of [["hoverDelay", 0, 700], ["hideDelay", 150, 2000], ["triggerHeight", 2, 12], ["topOffset", 0, 24], ["menuGap", 0, 16]]) {
+    for (const [key, min, max] of [["hoverDelay", 0, 700], ["hideDelay", 150, 2000], ["triggerHeight", 2, 12], ["topOffset", 0, 24], ["menuGap", 0, 16], ["openDuration", 0, 2000], ["closeDuration", 0, 2000]]) {
       if (Number.isFinite(input[key])) result[key] = Math.min(max, Math.max(min, Math.round(input[key])));
     }
     if (Array.isArray(input.excludedHosts)) {

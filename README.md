@@ -6,7 +6,7 @@
 
 ![深色磨砂书签栏：顶部按文件夹排列，展开「设计」查看书签](./assets/readme/interface-dark.png)
 
-<sub>当前源码的实际界面截图，使用示例书签与测试图标。悬浮栏覆盖在网页上方，不改变网页布局。</sub>
+<sub>使用独立的示例书签、示例图标与模拟网页拍摄，不含用户个人书签。悬浮栏覆盖在网页上方，不改变网页布局。</sub>
 
 [快速安装](#快速安装) · [功能](#功能) · [设置](#设置) · [权限与数据](#权限与数据) · [开发验证](#开发验证)
 
@@ -29,7 +29,7 @@
 
 ![浅色书签栏及文件夹菜单，与深色保持相同布局](./assets/readme/interface-light.png)
 
-<p align="center"><img src="./assets/readme/settings.png" width="420" alt="浮签设置页：磨砂样式、固定显示，以及默认均为 2 像素的顶部和菜单间距"></p>
+<p align="center"><img src="./assets/readme/settings.png" width="900" alt="浮签设置页：左侧配置顶部横条、触发区与动画时长，右侧实时预览并重播动效"></p>
 
 </details>
 
@@ -56,12 +56,14 @@ git clone https://github.com/auimus/floating-bookmarks.git
 | --- | --- | --- |
 | 外观 | 深色 | 深色 / 浅色 / 跟随系统 |
 | 样式 | 磨砂 | 磨砂 / 纯色 |
+| 显示顶部横条 | 开启 | 可隐藏横条，触发和动效保留 |
 | 距网页顶部 | 2px | 0–24px |
 | 下拉菜单间距 | 2px | 0–16px |
 | 展开 / 收起延迟 | 100 / 450ms | 0–700 / 150–2000ms |
+| 展开 / 收起动画时长 | 440 / 220ms | 各 0–2000ms；0 关闭对应动画 |
 | 顶部触发区 | 4px | 2–12px |
 
-还可选择显示文件夹、新标签页打开、固定显示及排除的网站。保存后立即生效。域名按完整域名匹配，例如 `example.com` 与 `www.example.com` 需要分别填写。
+设置页右侧读取用户自己的 Chrome 书签，实时预览修改；编辑顶部触发区时，蓝色高亮显示实际范围，也可点击「重播动效」查看完整展开与收起。保存后应用到网页。还可选择显示文件夹、新标签页打开、固定显示及排除的网站。域名按完整域名匹配，例如 `example.com` 与 `www.example.com` 需要分别填写。
 
 <details>
 <summary>键盘、鼠标与图标说明</summary>
@@ -125,7 +127,9 @@ background.js       书签 API、消息校验与设置写入
 shared.js           设置归一化、书签树选择与搜索
 content.js          悬浮栏、菜单、搜索与交互
 bar-styles.js       Shadow DOM 界面样式
+bar-motion.js       液态轮廓、弹簧节奏与动画清理
 popup.*             设置页
+preview.*           设置页中的隔离交互预览
 icons/              本地扩展图标
 assets/readme/      文档界面截图
 tests/              核心与浏览器验收

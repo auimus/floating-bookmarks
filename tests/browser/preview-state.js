@@ -3,7 +3,7 @@
   const query=new URLSearchParams(location.search),state=query.get('state')||'menu';
   const theme=query.get('theme')||'dark';
   if(query.get('zoom')==='2')document.body.style.zoom='2';
-  if(state==='verify'||state==='motion-verify'||state==='layout-verify')return;
+  if(['verify','motion-verify','layout-verify','preview-motion-verify','motion-reference'].includes(state))return;
   if(location.pathname==='/popup.html'){
     const check=()=>!document.getElementById('fields').disabled;
     for(let i=0;i<100&&!check();i++)await new Promise(r=>setTimeout(r,20));

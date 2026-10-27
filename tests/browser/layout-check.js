@@ -10,7 +10,7 @@
     const click=title=>s.querySelector(`.bookmark[title="${title}"]`).click();
     const settle=async()=>{
       await Promise.race([
-        Promise.all([...s.querySelectorAll('.bar,.panel,.bookmark-selection')].flatMap(e=>e.getAnimations({subtree:true})).map(a=>a.finished.catch(()=>{}))),
+        Promise.all(s.getAnimations().map(a=>a.finished.catch(()=>{}))),
         new Promise((_,reject)=>setTimeout(()=>reject(Error('动画未在 5 秒内完成')),5000))
       ]);
     };

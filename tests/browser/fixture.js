@@ -17,7 +17,7 @@
   ])];
   window.fixture={tree,opened:[],failSave:false,failOpen:false,failRead:false};
   const changes=event(), messages=event();
-  window.chrome={storage:{onChanged:changes},runtime:{getURL:path=>new URL(path,location.origin).href,onMessage:messages,sendMessage:async message=>{
+  window.chrome={storage:{onChanged:changes},runtime:{getManifest:()=>fixture.manifest,getURL:path=>new URL(path,location.origin).href,onMessage:messages,sendMessage:async message=>{
     let settings=FloatingBookmarks.normalizeSettings(JSON.parse(localStorage.getItem('fixture-settings')||'null')||{});
     switch(message.type){
       case 'GET_STATE': return fixture.failRead?{ok:false,error:'书签读取失败'}:{ok:true,tree,settings};

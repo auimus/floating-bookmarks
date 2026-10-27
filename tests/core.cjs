@@ -66,6 +66,17 @@ check('spacing migrates old settings and accepts zero with bounded integer value
   assert.equal(FB.normalizeSettings({ menuGap: 3.7 }).menuGap, 4);
 });
 const events = {};
+check('hint and animation settings migrate, validate and support zero duration', () => {
+  const old = FB.normalizeSettings({theme:'light'});
+  assert.equal(old.showHint,true); assert.equal(old.openDuration,440); assert.equal(old.closeDuration,220);
+  const zero = FB.normalizeSettings({showHint:false,openDuration:0,closeDuration:0});
+  assert.equal(zero.showHint,false); assert.equal(zero.openDuration,0); assert.equal(zero.closeDuration,0);
+  const bounds = FB.normalizeSettings({showHint:'false',openDuration:3000,closeDuration:-1});
+  assert.equal(bounds.showHint,true); assert.equal(bounds.openDuration,2000); assert.equal(bounds.closeDuration,0);
+  assert.equal(FB.normalizeSettings({openDuration:NaN}).openDuration,440);
+  assert.equal(FB.normalizeSettings({closeDuration:Infinity}).closeDuration,220);
+  assert.equal(FB.normalizeSettings({openDuration:123.4}).openDuration,123);
+});
 const event = name => ({ addListener: fn => { events[name] = fn; } });
 let stored = {}, failWrite = false, created = [], updated = [], broadcasts = [];
 const chrome = {
@@ -103,6 +114,11 @@ const request = (message, who = sender) => new Promise((resolve, reject) => {
   assert.equal(stored.settings.topOffset,8); assert.equal(stored.settings.menuGap,4);
   assert.equal(response.settings.topOffset,8); assert.equal(response.settings.menuGap,4);
   assert.equal(response.settings.theme,'light'); checks++; console.log('PASS spacing persists through background settings and readback');
+  await request({type:'SET_SETTINGS',patch:{showHint:false,openDuration:880,closeDuration:360}});
+  response = await request({type:'GET_STATE'});
+  assert.equal(response.settings.showHint,false); assert.equal(response.settings.openDuration,880); assert.equal(response.settings.closeDuration,360);
+  assert.equal(stored.settings.showHint,false); assert.equal(stored.settings.theme,'light');
+  checks++; console.log('PASS hint visibility and independent animation durations persist through background');
   failWrite = true;
   response = await request({type:'SET_SETTINGS',patch:{theme:'dark'}});
   assert.equal(response.ok,false); assert.match(response.error,/disk/); assert.equal(stored.settings.theme,'light');

@@ -1,0 +1,14 @@
+:root { font: 14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; color-scheme: dark; color: #d6dde7; background: #252b34; }
+:root[data-theme=light] { color-scheme: light; color: #344355; background: #f4f6fa; }
+* { box-sizing: border-box; }
+body { margin: 0; overflow: hidden; }
+.trigger-guide { position: fixed; z-index: 2147483647; top: 0; left: 0; right: 0; pointer-events: none; background: #4d9aff55; border-top: 1px solid #83baff; border-bottom: 1px solid #83baff; }
+:root[data-theme=light] .trigger-guide { background: #2876e044; border-color: #2869c2; }
+.page-banner { position: absolute; inset: 0 0 auto; height: 142px; background: linear-gradient(115deg,#6987ab35,#a7b9d00a 58%,#a3876735); }
+.page-content { position: relative; padding: 112px 32px 24px; opacity: .55; }
+h1 { font-size: 20px; font-weight: 500; margin: 0 0 24px; }
+.page-rule { height: 1px; background: currentColor; opacity: .12; }
+article { padding: 22px 0; border-bottom: 1px solid #8493a422; }
+h2 { font-size: 14px; font-weight: 400; margin: 0; }
+#preview-notice,#preview-disabled { position: fixed; z-index: 2147483647; left: 20px; right: 20px; bottom: 16px; margin: 0; padding: 10px 14px; border: 1px solid #899ab436; border-radius: 8px; background: #202731; color: #e1e8f2; font-size: 13px; text-align: center; }
+:root[data-theme=light] #preview-notice,:root[data-theme=light] #preview-disabled { background: #fff; color: #344355; }
